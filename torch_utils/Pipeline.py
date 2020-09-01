@@ -2,7 +2,7 @@ import time
 import copy
 import torch
 import numpy as np
-from LiveFigure import LiveFigure
+from .LiveFigure import LiveFigure
 from matplotlib import pyplot as plt
 
 # progress bar (works in Jupyter notebook too!)
