@@ -1,3 +1,34 @@
+"""
+Pipeline.py
+
+MIT License
+
+Copyright (c) 2020 Alexandros Benetatos
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+"""
+DESCRIPTION
+
+"""
+
 import time
 import copy
 import torch
@@ -17,7 +48,7 @@ class Pipeline():
 	def __init__(self, model, device, optimizer, criterion,
 	                   trainloader, testloader, valloader=None,
 	                   train_losses=None, val_losses=None, train_accuracies=None, val_accuracies=None,
-	                   best_model=None, live_plot=False, time_elapsed=0.0, init_epoch=1):
+	                   best_model=None, live_plot=False, time_elapsed=0.0, init_epochs=1):
 		self.model        = model
 		self.device       = device
 		self.optimizer    = optimizer
@@ -25,7 +56,7 @@ class Pipeline():
 		self.trainloader  = trainloader
 		self.valloader    = valloader
 		self.testloader   = testloader
-		self.init_epoch   = init_epoch
+		self.epochs       = init_epochs
 		self.time_elapsed = time_elapsed
 
 		self.set_live_plot(   live_plot   )
@@ -38,7 +69,7 @@ class Pipeline():
 		self.model = model
 
 	def set_current_epoch(self, set_current_epoch):
-		self.init_epoch = set_current_epoch
+		self.epochs = set_current_epoch
 
 	def set_dataloaders(self, trainloader=None, testloader=None, valloader=None):
 		if trainloader is not None:
@@ -176,8 +207,8 @@ class Pipeline():
 
 	def training(self, epochs, live_plot_every=1, earlystopping=None):
 		since = time.time()
-
-		for self.epoch in trange(self.init_epoch, self.init_epoch + epochs): # loop over the dataset multiple times
+		init_epochs = self.epochs
+		for self.epochs in trange(init_epochs, init_epochs + epochs): # loop over the dataset multiple times
 			train_loss, val_loss, train_accuracy, val_accuracy = self.train_one_epoch()
 
 			self.train_losses.append(    train_loss    )
@@ -191,7 +222,7 @@ class Pipeline():
 				self.val_losses.append(    val_loss    )
 				self.val_accuracies.append(val_accuracy)
 
-			if self.live_plot and (not (self.epoch)%live_plot_every):
+			if self.live_plot and (not (self.epochs)%live_plot_every):
 				self.update_live_plot()
 
 			if earlystopping is not None:
@@ -201,7 +232,7 @@ class Pipeline():
 					break
 
 		plt.pause(1)
-		self.init_epoch = self.epoch + 1
+		self.epochs += 1
 
 		# calculate statistics
 		if self.live_plot:
@@ -210,7 +241,7 @@ class Pipeline():
 		self.time_elapsed = time.time() - since
 		print(f'Training complete in {self.time_elapsed // 60:.0f}m {self.time_elapsed % 60:.0f}s')
 		if self.valloader is not None:
-			print(f"{self.epoch} epochs done. Best validation accuracy is {max(self.val_accuracies):0.3f}. Best validation loss is {min(self.val_losses):0.3f}")
+			print(f"{self.epochs} epochs done. Best validation accuracy is {max(self.val_accuracies):0.3f}. Best validation loss is {min(self.val_losses):0.3f}")
 
 		return self.train_losses, self.val_losses, \
 		       self.train_accuracies, self.val_accuracies, \
