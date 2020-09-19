@@ -9,7 +9,7 @@ setup(
   author = 'Alexandros Benetatos',
   author_email = 'alexandrosbene@gmail.com',
   url = 'https://github.com/alex-bene/pytorch-utils',
-#   download_url = 'https://github.com/alex-bene/pytorch-utils/archive/v0.1-beta.tar.gz',
+  download_url = 'https://github.com/alex-bene/pytorch-utils/archive/v0.1-beta.tar.gz',
   keywords = ['pytorch', 'utilities '],
   install_requires=[
           'numpy',
