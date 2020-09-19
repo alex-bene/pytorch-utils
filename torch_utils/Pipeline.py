@@ -27,6 +27,7 @@ SOFTWARE.
 """
 DESCRIPTION
 
+A class to set a training and testing pipeline for neural networks with pytorch.
 """
 
 import time
@@ -123,26 +124,27 @@ class Pipeline():
 
 	def update_live_plot(self):
 		self.live_figure.update([
-								[[np.arange(len(self.train_losses)),     np.arange(len(self.train_losses    ))],
-								[self.train_losses,     self.moving_average(self.train_losses    , 3)],
-								['raw', '3-moving average'], 'Traning Loss'       ], # train loss
-								[[np.arange(len(self.train_accuracies)), np.arange(len(self.train_accuracies))],
-								[self.train_accuracies, self.moving_average(self.train_accuracies, 3)],
-								['raw', '3-moving average'], 'Traning Accuracy'   ], # train accuracy
-								[[np.arange(len(self.val_losses)),       np.arange(len(self.val_losses      ))],
-								[self.val_losses,       self.moving_average(self.val_losses      , 3)],
-								['raw', '3-moving average'], 'Validation Loss'    ], # validation loss
-								[[np.arange(len(self.val_accuracies)),   np.arange(len(self.val_accuracies  ))],
-								[self.val_accuracies,   self.moving_average(self.val_accuracies  , 3)],
-								['raw', '3-moving average'], 'Validation Accuracy'] # validation accuracy
-								])
+		                        [[np.arange(len(self.train_losses)),     np.arange(len(self.train_losses    ))],
+		                        [self.train_losses,     self.moving_average(self.train_losses    , 3)],
+		                        ['raw', '3-moving average'], 'Traning Loss'       ], # train loss
+		                        [[np.arange(len(self.train_accuracies)), np.arange(len(self.train_accuracies))],
+		                        [self.train_accuracies, self.moving_average(self.train_accuracies, 3)],
+		                        ['raw', '3-moving average'], 'Traning Accuracy'   ], # train accuracy
+		                        [[np.arange(len(self.val_losses)),       np.arange(len(self.val_losses      ))],
+		                        [self.val_losses,       self.moving_average(self.val_losses      , 3)],
+		                        ['raw', '3-moving average'], 'Validation Loss'    ], # validation loss
+		                        [[np.arange(len(self.val_accuracies)),   np.arange(len(self.val_accuracies  ))],
+		                        [self.val_accuracies,   self.moving_average(self.val_accuracies  , 3)],
+		                        ['raw', '3-moving average'], 'Validation Accuracy'] # validation accuracy
+		                        ])
 
 	def train_one_epoch(self):
 		# ----------------- TRAINING ----------------- #
 		samples        = 0
 		train_loss     = 0.0
 		train_accuracy = 0.0
-		progress       = tqdm(enumerate(self.trainloader), desc="TRAINING | Loss: - Accuracy:", total=len(self.trainloader), unit='batches', ncols='100%')
+		progress       = tqdm(enumerate(self.trainloader), desc="TRAINING | Loss: - Accuracy:",
+		                      total=len(self.trainloader), unit='batches', ncols='100%')
 
 		self.model.train()
 		for cnt, (inputs, labels) in progress:
@@ -165,7 +167,8 @@ class Pipeline():
 
 			samples += len(outputs)
 	        # updating progress bar
-			progress.set_description(f"TRAINING | Loss: {train_loss/(cnt+1):.4f} - Accuracy: {100*train_accuracy/samples:.2f}")
+			progress.set_description(f"TRAINING | Loss: {train_loss/(cnt+1):.4f} - " \
+			                         f"Accuracy: {100*train_accuracy/samples:.2f}")
 
 		# calculate statistics
 		train_loss     /= len(self.trainloader)
@@ -176,7 +179,8 @@ class Pipeline():
 			samples      = 0
 			val_loss     = 0.0
 			val_accuracy = 0.0
-			progress     = tqdm(enumerate(self.valloader), desc="VALIDATION | Loss: - Accuracy:", total=len(self.valloader), unit='batches', ncols='100%')
+			progress     = tqdm(enumerate(self.valloader), desc="VALIDATION | Loss: - Accuracy:",
+			                    total=len(self.valloader), unit='batches', ncols='100%')
 
 			self.model.eval()
 			for cnt, (inputs, labels) in progress:
@@ -193,7 +197,8 @@ class Pipeline():
 
 				samples += len(outputs)
 				# updating progress bar
-				progress.set_description(f"VALIDATION | Loss: {val_loss/(cnt+1):.4f} - Accuracy: {100*val_accuracy/samples:.2f}")
+				progress.set_description(f"VALIDATION | Loss: {val_loss/(cnt+1):.4f} - " \
+				                         f"Accuracy: {100*val_accuracy/samples:.2f}")
 
 			# calculate statistics
 			val_loss     /= len(self.valloader)
@@ -241,7 +246,8 @@ class Pipeline():
 		self.time_elapsed = time.time() - since
 		print(f'Training complete in {self.time_elapsed // 60:.0f}m {self.time_elapsed % 60:.0f}s')
 		if self.valloader is not None:
-			print(f"{self.epochs} epochs done. Best validation accuracy is {max(self.val_accuracies):0.3f}. Best validation loss is {min(self.val_losses):0.3f}")
+			print(f"{self.epochs} epochs done. Best validation accuracy is {max(self.val_accuracies):0.3f}. " \
+			      f"Best validation loss is {min(self.val_losses):0.3f}")
 
 		return self.train_losses, self.val_losses, \
 		       self.train_accuracies, self.val_accuracies, \
@@ -257,7 +263,8 @@ class Pipeline():
 		samples  = 0
 		avg_loss = 0.0
 		accuracy = 0.0
-		progress = tqdm(enumerate(testloader), desc="Loss: - Accuracy:", total=len(testloader), unit='batches', ncols='100%')
+		progress = tqdm(enumerate(testloader), desc="Loss: - Accuracy:",
+		                total=len(testloader), unit='batches', ncols='100%')
 
 		model.eval()
 		for cnt, (inputs, labels) in progress:

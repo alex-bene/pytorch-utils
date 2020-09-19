@@ -27,6 +27,7 @@ SOFTWARE.
 """
 DESCRIPTION
 
+A class to create real time figures for the training process of a neural network.
 """
 
 import numpy as np

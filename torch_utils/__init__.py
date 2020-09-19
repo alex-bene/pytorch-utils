@@ -27,7 +27,7 @@ SOFTWARE.
 """
 DESCRIPTION
 
-Just a file to be able to use retinal_implants_utils as a module and import it
+Just a file to be able to use retinal_implants_utils as a module and import it.
 """
 
 from .Pipeline    import Pipeline
