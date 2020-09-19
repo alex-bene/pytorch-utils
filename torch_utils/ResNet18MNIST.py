@@ -35,14 +35,20 @@ import torchvision
 from torchvision.models import resnet
 
 class ResNet18MNIST(resnet.ResNet):
-	def __init__(self, pretrained=True, feature_extraction=True, load_state_path=None):
+	def __init__(self, pretrained=True, input_size=224, feature_extraction=True, load_state_path=None):
 		super().__init__(block=resnet.BasicBlock, layers=[2, 2, 2, 2])
 
 		resnet18_path = 'https://download.pytorch.org/models/resnet18-5c106cde.pth'
 
+		self.input_size = input_size
+
 		if pretrained:
 			state_dict = torch.utils.model_zoo.load_url(resnet18_path)
 			self.load_state_dict(state_dict)
+			# pretrained model have 224x224 input
+			if self.input_size != 224:
+				print("Input size is set to 224 because of the use of pretrained weights")
+				self.input_size = 224
 
 		if feature_extraction:
 			for param in self.parameters():
@@ -51,8 +57,6 @@ class ResNet18MNIST(resnet.ResNet):
 		# change output layer to fit MNIST (10 classes)
 		num_ftrs = self.fc.in_features
 		self.fc  = torch.nn.Linear(num_ftrs, 10)
-
-		self.input_size = 224
 
 		self.load_state(load_state_path)
 
