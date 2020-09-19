@@ -5,7 +5,7 @@ setup(
   packages = ['torch_utils'],
   version = '0.1',
   license='MIT',
-  description = 'Some utility classes for use with pytorch',   # Give a short description about your library
+  description = 'Some utility classes for use with pytorch',
   author = 'Alexandros Benetatos',
   author_email = 'alexandrosbene@gmail.com',
   url = 'https://github.com/alex-bene/pytorch-utils',
