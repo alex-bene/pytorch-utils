@@ -32,4 +32,4 @@ Just a file to be able to use retinal_implants_utils as a module and import it.
 
 from .Pipeline    import Pipeline
 from .LiveFigure  import LiveFigure
-from .ResNetMNIST import ResNetMNIST
+from .ResNet18MNIST import ResNet18MNIST
