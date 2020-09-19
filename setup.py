@@ -1,8 +1,8 @@
 from distutils.core import setup
 
 setup(
-  name = 'pytorch_utils',
-  packages = ['pytorch_utils'],
+  name = 'torch_utils',
+  packages = ['torch_utils'],
   version = '0.1',
   license='MIT',
   description = 'Some utility classes for use with pytorch',   # Give a short description about your library
