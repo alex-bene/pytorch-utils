@@ -30,6 +30,6 @@ DESCRIPTION
 Just a file to be able to use ./models as a module and import it.
 """
 
-from .BaseModel import BaseModel
+from .BaseClassificationModel import BaseClassificationModel
 from .ResNet    import ResNet
 from .pretrained import *

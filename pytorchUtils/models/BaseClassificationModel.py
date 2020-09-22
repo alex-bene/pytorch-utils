@@ -1,5 +1,5 @@
 """
-BaseModel.py
+BaseClassificationModel.py
 
 MIT License
 
@@ -27,27 +27,31 @@ SOFTWARE.
 """
 DESCRIPTION
 
-A BaseModel enhances with some functions for use ONLY as the last parent class to a neural network class.
+A BaseClassificationModel enhances with some functions for use ONLY as the last parent class to a neural network class.
 """
 
 import torch
+from .pretrained.Pretrained import PretrainedModelUrl
 
-class BaseModel():
-	def __init__(self, pretrained=True, pretrained_path=None,
+class BaseClassificationModel():
+	def __init__(self, pretrained=True, pretrained_path_or_url=None,
 	             feature_extraction=True, use_cuda=True):
 		super().__init__()
 
 		if pretrained:
-			if pretrained_path is None:
-				raise ValueError("If pretrained is 'True' pretrained_path can not be 'None'")
-			elif pretrained_path.startswith('https:'):
-				state_dict = torch.utils.model_zoo.load_url(pretrained_path)
+			if isinstance(pretrained_path_or_url, PretrainedModelUrl) and pretrained_path_or_url.url.startswith('https:'):
+				state_dict = torch.utils.model_zoo.load_url(pretrained_path_or_url.url)
+			elif isinstance(pretrained_path_or_url, str) and pretrained_path_or_url.startswith('https:'):
+				state_dict = torch.utils.model_zoo.load_url(pretrained_path_or_url)
+			elif isinstance(pretrained_path_or_url, str):
+				state_dict = torch.load(pretrained_path_or_url)
 			else:
-				state_dict = torch.load(pretrained_path)
+				raise ValueError("If pretrained is 'True' pretrained_path_or_url must be a string or a PretrainedModelUrl object")
+
 			self.load_state_dict(state_dict)
 
 		if feature_extraction:
-			self.freeze_layers(-1)
+			self.freeze_layers(-2) #fc.weight and fc.bias
 
 		if use_cuda:
 			if torch.cuda.is_available():
@@ -67,7 +71,7 @@ class BaseModel():
 			for param in self.parameters():
 				param.requires_grad = False
 		# all until that layer
-		elif isinstance(layers, basestring ):
+		elif isinstance(layers, str):
 			found_name = False
 			for name, params in self.named_parameters():
 				if name == layers:
@@ -75,7 +79,7 @@ class BaseModel():
 				params.requires_grad = found_name
 		# all but the last {-layers} layers
 		elif isinstance(layers, int) and layers < 0:
-			nop = len(self.named_parameters()) # number of parameters
+			nop = sum(1 for _ in self.parameters()) # number of layers
 			found_layer = False
 			for cnt, params in enumerate(self.parameters()):
 				if (nop - cnt) == -layers:
@@ -89,22 +93,21 @@ class BaseModel():
 					found_layer = True
 				params.requires_grad = found_layer
 		# only those with matching names
-		elif isinstance(layers, list) and all(isinstance(layer, basestring) for layer in layers):
+		elif isinstance(layers, list) and all(isinstance(layer, str) for layer in layers):
 			for name, params in self.named_parameters():
-				params.requires_grad = (name in layers)
+				params.requires_grad = name not in layers
 		# only those with matching 'layer number'
 		elif isinstance(layers, list) and all(isinstance(layer, int) for layer in layers):
 			for cnt, params in enumerate(self.parameters()):
-				params.requires_grad = ((nop - cnt) in layers)
+				params.requires_grad = cnt not in layers
 		else:
 			raise TypeError("The argument must either be 'None' (freeze all layers), or a model "
 			                "parameter name (or a list of them) or an integer (or a list of them)")
 
 	def print_trainable_params(self):
-		params_to_update = model.parameters()
 		print("Parameters to train:")
 		cnt = 0
-		for name, param in self.model.named_parameters():
+		for name, param in self.named_parameters():
 			if param.requires_grad == True:
 				print("\t", name)
 				cnt += 1

@@ -27,7 +27,7 @@ SOFTWARE.
 """
 DESCRIPTION
 
-A file to create the necessary structs for the pretrained models urls to be easily accessible.
+A file to create the necessary structs for the pretrained models' urls to be easily accessible.
 """
 
 import os
@@ -38,9 +38,9 @@ class PretrainedModelUrls():
 
 class MNISTpretrained():
 	def __init__(self):
-		self.resnet18 = PretrainedModelUrl(os.path.join(os.getcwd(), 'MNIST__ResNet18Model__Adabound__25_epochs.pth'),
+		self.resnet18 = PretrainedModelUrl('https://github.com/alex-bene/pytorch-utils/raw/master/pytorchUtils/models/pretrained/MNIST__ResNet18Model__Adabound__25_epochs.pth',
 		                                   name = 'resnet18',
-		                                   info = """optimizer: Adabound\n with lr=1e-3 and final_lr=0.1
+		                                   info = """optimizer: Adabound with lr=1e-3 and final_lr=0.1
 		                                             criterion: CrossEntropyLoss
 		                                             epochs   : 25
 		                                             choice   : the model with the best validation accuracy
@@ -53,9 +53,6 @@ class PretrainedModelUrl():
 		self.info = info
 
 	def __call__(self):
-		return self.url
-
-	def __repr__(self):
 		return self.url
 
 url = PretrainedModelUrls()

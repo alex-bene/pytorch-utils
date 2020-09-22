@@ -32,25 +32,29 @@ A slightly modified ResNet model class.
 
 import torch
 from torchvision.models import resnet
-from .BaseModel import BaseModel
+from .BaseClassificationModel import BaseClassificationModel
 
-class ResNet(resnet.ResNet, BaseModel):
+class ResNet(resnet.ResNet, BaseClassificationModel):
 	def __init__(self, pretrained=True, feature_extraction=True,
-	             load_state_path=None, use_cuda=True, num_classes=1000, resnet_type='resnet18', **kwargs):
-		block, layers, kwargs = self.get_net_specs(resnet_type, kwargs)
+	             pretrained_path_or_url=None, use_cuda=True, num_classes=1000, resnet_type='resnet18', **kwargs):
+		block, layers, kwargs = self.get_resnet_specs(resnet_type, kwargs)
 
-		super().__init__(block=block, layers=layers, num_classes=num_classes, **kwargs)
-
-		if load_state_path is not None:
-			self.pretrained_path = load_state_path
+		# to load the "default" ImageNet weigths the output classes must be 1000
+		if pretrained and pretrained_path_or_url is None:
+			num_classes_t = 1000
+			self.pretrained_path_or_url = resnet.model_urls[resnet_type]
 		else:
-			self.pretrained_path = resnet.model_urls[resnet_type]
+			num_classes_t = num_classes
+			self.pretrained_path_or_url = pretrained_path_or_url
 
-		BaseModel.__init__(self, pretrained_path=self.pretrained_path, pretrained=pretrained,
-		                   use_cuda=use_cuda, feature_extraction=feature_extraction)
+		super().__init__(block=block, layers=layers, num_classes=num_classes_t, **kwargs)
 
-		# if torch.cuda.is_available():
-		# 	self.cuda()
+		BaseClassificationModel.__init__(self, pretrained_path_or_url=self.pretrained_path_or_url, use_cuda=use_cuda,
+		                                 pretrained=pretrained, feature_extraction=feature_extraction)
+
+		if pretrained and pretrained_path_or_url is None and num_classes != 1000:
+			num_ftrs = self.fc.in_features
+			self.fc = torch.nn.Linear(num_ftrs, num_classes)
 
 	def get_resnet_specs(self, resnet_type, kwargs):
 		if resnet_type not in resnet.model_urls.keys():
@@ -79,7 +83,7 @@ class ResNet(resnet.ResNet, BaseModel):
 		elif resnet_type=='wide_resnet101_2':
 			kwargs['width_per_group'] = 64 * 2
 
-		if resnet_type.startswith(resnext):
+		if resnet_type.startswith('resnext'):
 			kwargs['groups'] = 32
 
 		return block, layers, kwargs

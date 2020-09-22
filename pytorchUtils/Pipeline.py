@@ -49,7 +49,7 @@ class Pipeline():
 	def __init__(self, model, device, optimizer, criterion,
 	                   trainloader, testloader, valloader=None,
 	                   train_losses=None, val_losses=None, train_accuracies=None, val_accuracies=None,
-	                   best_model=None, live_plot=False, time_elapsed=0.0, init_epochs=0):
+	                   best_model=None, best_model_val_acc=None, live_plot=False, time_elapsed=0.0, init_epochs=0):
 		self.model        = model
 		self.device       = device
 		self.optimizer    = optimizer
@@ -62,9 +62,9 @@ class Pipeline():
 
 		self.set_live_plot(   live_plot   )
 
-		self.update_accuracies_history(train_accuracies, val_accuracies)
-		self.update_losses_history(    train_losses    , val_losses    )
-		self.update_best_model(        best_model                      )
+		self.update_accuracies_history(train_accuracies, val_accuracies    )
+		self.update_losses_history(    train_losses    , val_losses        )
+		self.update_best_model(        best_model      , best_model_val_acc)
 
 	def set_model(self, model):
 		self.model = model
@@ -107,15 +107,19 @@ class Pipeline():
 		self.train_accuracies = train_accuracies
 		self.val_accuracies   = val_accuracies
 
-	def update_best_model(self, best_model=None):
+	def update_best_model(self, best_model=None, best_model_val_acc=None):
 		if best_model is None:
-			best_model = copy.deepcopy(self.model)#.state_dict())
+			best_model = copy.deepcopy(self.model) #.state_dict())
+		if best_model_val_acc is None:
+			print(self.best_val_acc == 0.0)
+			best_model_val_acc = self.test(best_model)[1]
 
-		self.best_model = best_model
+		self.best_model   = best_model
+		self.best_val_acc = max(self.best_val_acc, best_model_val_acc)
 
 	def moving_average(self, a, n=3):
 		n  += 1 - n%2 # odd numbers to be able to center each data value in the window
-		pad = (n-1)//2
+		pad = (n - 1)//2
 		ret = np.pad(a, (pad + 1, pad), 'edge')
 		ret = np.cumsum(ret, dtype=float)
 		ret = ret[n:] - ret[:-n]
@@ -222,7 +226,7 @@ class Pipeline():
 			if self.valloader is not None:
 				if val_accuracy >= self.best_val_acc:
 					self.best_val_acc = val_accuracy
-					self.best_model   = copy.deepcopy(self.model)#.state_dict())
+					self.best_model   = copy.deepcopy(self.model) #.state_dict())
 
 				self.val_losses.append(    val_loss    )
 				self.val_accuracies.append(val_accuracy)
