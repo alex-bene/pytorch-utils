@@ -36,6 +36,7 @@ import torch
 import numpy as np
 from .LiveFigure import LiveFigure
 from matplotlib import pyplot as plt
+from tqdm.autonotebook import trange, tqdm
 
 # progress bar (works in Jupyter notebook too!)
 # try:
@@ -43,13 +44,12 @@ from matplotlib import pyplot as plt
 # 	import tqdm.notebook as tqdm
 # except:
 # 	import tqdm
-from tqdm.autonotebook import trange, tqdm
 
 class Pipeline():
 	def __init__(self, model, device, optimizer, criterion,
 	                   trainloader, testloader, valloader=None,
 	                   train_losses=None, val_losses=None, train_accuracies=None, val_accuracies=None,
-	                   best_model=None, live_plot=False, time_elapsed=0.0, init_epochs=1):
+	                   best_model=None, live_plot=False, time_elapsed=0.0, init_epochs=0):
 		self.model        = model
 		self.device       = device
 		self.optimizer    = optimizer
@@ -124,16 +124,16 @@ class Pipeline():
 
 	def update_live_plot(self):
 		self.live_figure.update([
-		                        [[np.arange(len(self.train_losses)),     np.arange(len(self.train_losses    ))],
+		                        [[np.arange(1, 1+len(self.train_losses)),     np.arange(1, 1+len(self.train_losses    ))],
 		                        [self.train_losses,     self.moving_average(self.train_losses    , 3)],
 		                        ['raw', '3-moving average'], 'Traning Loss'       ], # train loss
-		                        [[np.arange(len(self.train_accuracies)), np.arange(len(self.train_accuracies))],
+		                        [[np.arange(1, 1+len(self.train_accuracies)), np.arange(1, 1+len(self.train_accuracies))],
 		                        [self.train_accuracies, self.moving_average(self.train_accuracies, 3)],
 		                        ['raw', '3-moving average'], 'Traning Accuracy'   ], # train accuracy
-		                        [[np.arange(len(self.val_losses)),       np.arange(len(self.val_losses      ))],
+		                        [[np.arange(1, 1+len(self.val_losses)),       np.arange(1, 1+len(self.val_losses      ))],
 		                        [self.val_losses,       self.moving_average(self.val_losses      , 3)],
 		                        ['raw', '3-moving average'], 'Validation Loss'    ], # validation loss
-		                        [[np.arange(len(self.val_accuracies)),   np.arange(len(self.val_accuracies  ))],
+		                        [[np.arange(1, 1+len(self.val_accuracies)),   np.arange(1, 1+len(self.val_accuracies  ))],
 		                        [self.val_accuracies,   self.moving_average(self.val_accuracies  , 3)],
 		                        ['raw', '3-moving average'], 'Validation Accuracy'] # validation accuracy
 		                        ])
@@ -227,7 +227,7 @@ class Pipeline():
 				self.val_losses.append(    val_loss    )
 				self.val_accuracies.append(val_accuracy)
 
-			if self.live_plot and (not (self.epochs)%live_plot_every):
+			if self.live_plot and (not (self.epochs + 1)%live_plot_every):
 				self.update_live_plot()
 
 			if earlystopping is not None:
