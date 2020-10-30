@@ -35,7 +35,7 @@ from .pretrained.Pretrained import PretrainedModelUrl
 
 class BaseClassificationModel():
 	def __init__(self, pretrained=True, pretrained_path_or_url=None,
-	             feature_extraction=True, use_cuda=True):
+	             feature_extraction=True, use_cuda=True, num_classes=None):
 		super().__init__()
 
 		if pretrained:
@@ -52,6 +52,10 @@ class BaseClassificationModel():
 
 		if feature_extraction:
 			self.freeze_layers(-2) #fc.weight and fc.bias
+
+		if num_classes is not None:
+			num_ftrs = self.fc.in_features
+			self.fc = torch.nn.Linear(num_ftrs, num_classes)
 
 		if use_cuda:
 			if torch.cuda.is_available():

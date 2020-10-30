@@ -1,9 +1,10 @@
 from distutils.core import setup
+from setuptools import find_packages
 
 setup(
   name = 'pytorchUtils',
-  packages = ['pytorchUtils'],
-  version = '0.0.2',
+  packages = find_packages(),
+  version = '0.0.3',
   license='MIT',
   description = 'Some utility classes for use with pytorch',
   author = 'Alexandros Benetatos',
@@ -12,6 +13,7 @@ setup(
   download_url = 'https://github.com/alex-bene/pytorch-utils/archive/v0.0.2-beta.tar.gz',
   keywords = ['pytorch', 'utilities '],
   install_requires=[
+          'tqdm',
           'numpy',
           'torch',
           'matplotlib',

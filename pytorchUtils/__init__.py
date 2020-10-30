@@ -30,6 +30,6 @@ DESCRIPTION
 Just a file to be able to use pytorchUtils as a module and import it.
 """
 
-from .Pipeline   import Pipeline
-from .LiveFigure import LiveFigure
-from  .models import *
+from .LiveFigure import *
+from .Pipeline   import *
+from .           import models

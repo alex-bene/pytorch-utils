@@ -50,11 +50,9 @@ class ResNet(resnet.ResNet, BaseClassificationModel):
 		super().__init__(block=block, layers=layers, num_classes=num_classes_t, **kwargs)
 
 		BaseClassificationModel.__init__(self, pretrained_path_or_url=self.pretrained_path_or_url, use_cuda=use_cuda,
-		                                 pretrained=pretrained, feature_extraction=feature_extraction)
-
-		if pretrained and pretrained_path_or_url is None and num_classes != 1000:
-			num_ftrs = self.fc.in_features
-			self.fc = torch.nn.Linear(num_ftrs, num_classes)
+		                                 feature_extraction=feature_extraction, pretrained=pretrained,
+		                                 num_classes=num_classes if pretrained and pretrained_path_or_url is None 
+		                                             else None)
 
 	def get_resnet_specs(self, resnet_type, kwargs):
 		if resnet_type not in resnet.model_urls.keys():
