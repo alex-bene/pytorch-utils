@@ -45,22 +45,24 @@ from tqdm.autonotebook import trange, tqdm
 # except:
 # 	import tqdm
 
-class Pipeline():
+class ClassificationPipeline():
 	def __init__(self, model, device, optimizer, criterion,
-	                   trainloader, testloader, valloader=None,
+	                   trainloader, testloader, valloader=None, hide_sub_bars=True, hide_all_bars=False,
 	                   train_losses=None, val_losses=None, train_accuracies=None, val_accuracies=None,
 	                   best_model=None, best_model_val_acc=None, live_plot=False, time_elapsed=0.0, init_epochs=0):
-		self.model        = model
-		self.device       = device
-		self.optimizer    = optimizer
-		self.criterion    = criterion
-		self.trainloader  = trainloader
-		self.valloader    = valloader
-		self.testloader   = testloader
-		self.epochs       = init_epochs
-		self.time_elapsed = time_elapsed
+		self.model         = model
+		self.device        = device
+		self.optimizer     = optimizer
+		self.criterion     = criterion
+		self.trainloader   = trainloader
+		self.valloader     = valloader
+		self.testloader    = testloader
+		self.epochs        = init_epochs
+		self.time_elapsed  = time_elapsed
+		self.hide_sub_bars = hide_sub_bars or hide_all_bars
+		self.hide_top_bars = hide_all_bars
 
-		self.set_live_plot(   live_plot   )
+		self.set_live_plot(live_plot)
 
 		self.update_accuracies_history(train_accuracies, val_accuracies    )
 		self.update_losses_history(    train_losses    , val_losses        )
@@ -111,7 +113,6 @@ class Pipeline():
 		if best_model is None:
 			best_model = copy.deepcopy(self.model) #.state_dict())
 		if best_model_val_acc is None:
-			print(self.best_val_acc == 0.0)
 			best_model_val_acc = self.test(best_model)[1]
 
 		self.best_model   = best_model
@@ -148,7 +149,7 @@ class Pipeline():
 		train_loss     = 0.0
 		train_accuracy = 0.0
 		progress       = tqdm(enumerate(self.trainloader), desc="TRAINING | Loss: - Accuracy:",
-		                      total=len(self.trainloader), unit='batches', ncols='100%')
+		                      total=len(self.trainloader), unit='batches', ncols='100%', disable=self.hide_sub_bars)
 
 		self.model.train()
 		for cnt, (inputs, labels) in progress:
@@ -184,7 +185,7 @@ class Pipeline():
 			val_loss     = 0.0
 			val_accuracy = 0.0
 			progress     = tqdm(enumerate(self.valloader), desc="VALIDATION | Loss: - Accuracy:",
-			                    total=len(self.valloader), unit='batches', ncols='100%')
+			                    total=len(self.valloader), unit='batches', ncols='100%', disable=self.hide_sub_bars)
 
 			self.model.eval()
 			for cnt, (inputs, labels) in progress:
@@ -214,10 +215,14 @@ class Pipeline():
 
 		return train_loss, val_loss, train_accuracy, val_accuracy
 
-	def training(self, epochs, live_plot_every=1, earlystopping=None):
+	def training(self, epochs, live_plot_every=1, earlystopping=None, show_training_stats=True):
 		since = time.time()
 		init_epochs = self.epochs
-		for self.epochs in trange(init_epochs, init_epochs + epochs): # loop over the dataset multiple times
+
+		progress = tqdm(range(init_epochs, init_epochs + epochs), desc="Loss:",
+		                unit='epochs', ncols='100%', disable=self.hide_top_bars)
+
+		for self.epochs in progress: # loop over the dataset multiple times
 			train_loss, val_loss, train_accuracy, val_accuracy = self.train_one_epoch()
 
 			self.train_losses.append(    train_loss    )
@@ -248,10 +253,12 @@ class Pipeline():
 			self.update_live_plot()
 
 		self.time_elapsed = time.time() - since
-		print(f'Training complete in {self.time_elapsed // 60:.0f}m {self.time_elapsed % 60:.0f}s')
-		if self.valloader is not None:
-			print(f"{self.epochs} epochs done. Best validation accuracy is {max(self.val_accuracies):0.3f}. " \
-			      f"Best validation loss is {min(self.val_losses):0.3f}")
+
+		if show_training_stats:
+			print(f'Training complete in {self.time_elapsed // 60:.0f}m {self.time_elapsed % 60:.0f}s')
+			if self.valloader is not None:
+				print(f"{self.epochs} epochs done. Best validation accuracy is {max(self.val_accuracies):0.3f}. " \
+					f"Best validation loss is {min(self.val_losses):0.3f}")
 
 		return self.train_losses, self.val_losses, \
 		       self.train_accuracies, self.val_accuracies, \
@@ -292,3 +299,223 @@ class Pipeline():
 		accuracy *= 100/samples
 
 		return avg_loss.item(), accuracy
+
+class RegressionPipeline():
+	def __init__(self, model, device, optimizer, criterion, trainloader, testloader, valloader=None,
+	                   train_losses=None, val_losses=None, best_model=None, best_model_val_loss=None,
+                       live_plot=False, time_elapsed=0.0, init_epochs=0, hide_sub_bars=True, hide_all_bars=False):
+		self.model         = model
+		self.device        = device
+		self.optimizer     = optimizer
+		self.criterion     = criterion
+		self.trainloader   = trainloader
+		self.valloader     = valloader
+		self.testloader    = testloader
+		self.epochs        = init_epochs
+		self.time_elapsed  = time_elapsed
+		self.hide_sub_bars = hide_sub_bars or hide_all_bars
+		self.hide_top_bars = hide_all_bars
+
+		self.set_live_plot(live_plot)
+
+		self.update_losses_history(train_losses, val_losses         )
+		self.update_best_model(    best_model  , best_model_val_loss)
+
+	def set_model(self, model):
+		self.model = model
+
+	def set_current_epoch(self, set_current_epoch):
+		self.epochs = set_current_epoch
+
+	def set_dataloaders(self, trainloader=None, testloader=None, valloader=None):
+		if trainloader is not None:
+			self.trainloader = trainloader
+		if valloader is not None:
+			self.valloader   = valloader
+		if testloader is not None:
+			self.testloader  = testloader
+
+	def set_live_plot(self, live_plot=False):
+		if live_plot:
+			self.live_figure = LiveFigure(plt.subplots(1, 2, figsize=(30, 8))[0], sleep=False)
+
+		self.live_plot = live_plot
+
+	def update_losses_history(self, train_losses=None, val_losses=None):
+		if train_losses is None:
+			train_losses = []
+		if val_losses is None:
+			val_losses   = []
+			self.best_val_loss = np.inf
+		else :
+			self.best_val_loss = min(val_losses)
+
+		self.train_losses = train_losses
+		self.val_losses   = val_losses
+
+	def update_best_model(self, best_model=None, best_model_val_loss=None):
+		if best_model is None:
+			best_model = copy.deepcopy(self.model) #.state_dict())
+		if best_model_val_loss is None:
+			best_model_val_loss = self.test(best_model)
+
+		self.best_model    = best_model
+		self.best_val_loss = min(self.best_val_loss, best_model_val_loss)
+
+	def moving_average(self, a, n=3):
+		n  += 1 - n%2 # odd numbers to be able to center each data value in the window
+		pad = (n - 1)//2
+		ret = np.pad(a, (pad + 1, pad), 'edge')
+		ret = np.cumsum(ret, dtype=float)
+		ret = ret[n:] - ret[:-n]
+
+		return ret / n
+
+	def update_live_plot(self):
+		self.live_figure.update([
+		                        [[np.arange(1, 1+len(self.train_losses)), np.arange(1, 1+len(self.train_losses))],
+		                        [self.train_losses, self.moving_average(self.train_losses, 3)],
+		                        ['raw', '3-moving average'], 'Traning Loss'   ], # train loss
+		                        [[np.arange(1, 1+len(self.val_losses)),   np.arange(1, 1+len(self.val_losses  ))],
+		                        [self.val_losses,   self.moving_average(self.val_losses  , 3)],
+		                        ['raw', '3-moving average'], 'Validation Loss']  # validation loss
+		                        ])
+
+	def train_one_epoch(self):
+		# ----------------- TRAINING ----------------- #
+		samples    = 0
+		train_loss = 0.0
+		progress   = tqdm(enumerate(self.trainloader), desc="TRAINING | Loss:", disable=self.hide_sub_bars,
+		                  total=len(self.trainloader), unit='batches', ncols='100%')
+
+		self.model.train()
+		for cnt, (inputs, labels) in progress:
+			inputs = inputs.to(self.device)
+			labels = labels.to(self.device)
+
+			# zero the parameter gradients
+			self.optimizer.zero_grad()
+
+			# forward + backward + optimize
+			outputs = self.model(inputs)
+			loss    = self.criterion(outputs, labels)
+
+			loss.backward()
+			self.optimizer.step()
+
+			train_loss += loss
+
+			samples += len(outputs)
+	        # updating progress bar
+			progress.set_description(f"TRAINING | Loss: {train_loss/(cnt+1):.4f}")
+
+		# calculate statistics
+		train_loss     /= len(self.trainloader)
+
+		# ----------------- VALIDATION ----------------- #
+		if self.valloader is not None:
+			samples  = 0
+			val_loss = 0.0
+			progress = tqdm(enumerate(self.valloader), desc="VALIDATION | Loss:", disable=self.hide_sub_bars,
+			                total=len(self.valloader), unit='batches', ncols='100%')
+
+			self.model.eval()
+			for cnt, (inputs, labels) in progress:
+				inputs = inputs.to(self.device)
+				labels = labels.to(self.device)
+
+				with torch.no_grad():
+					outputs = self.model(inputs)
+					loss    = self.criterion(outputs, labels)
+
+					val_loss += loss
+
+				samples += len(outputs)
+				# updating progress bar
+				progress.set_description(f"VALIDATION | Loss: {val_loss/(cnt+1):.4f}")
+
+			# calculate statistics
+			val_loss /= len(self.valloader)
+
+		else:
+			val_loss = None
+
+		return train_loss, val_loss
+
+	def training(self, epochs, live_plot_every=1, earlystopping=None, show_training_stats=True):
+		since = time.time()
+		init_epochs = self.epochs
+
+		progress = tqdm(range(init_epochs, init_epochs + epochs), desc="Loss:",
+		                unit='epochs', ncols='100%', disable=self.hide_top_bars)
+
+		for self.epochs in progress: # loop over the dataset multiple times
+			train_loss, val_loss = self.train_one_epoch()
+
+			self.train_losses.append(train_loss)
+
+			if self.valloader is not None:
+				if val_loss <= self.best_val_loss:
+					self.best_val_loss = val_loss
+					self.best_model    = copy.deepcopy(self.model) #.state_dict())
+
+				self.val_losses.append(val_loss)
+
+			if self.live_plot and (not (self.epochs + 1)%live_plot_every):
+				self.update_live_plot()
+
+			if earlystopping is not None:
+				earlystopping(val_loss, model)
+				if earlystopping.early_stop:
+					print("Early stopping")
+					break
+
+	        # updating progress bar
+			progress.set_description(f"Loss: train {train_loss:.4f} - validation {val_loss:.4f}")
+
+		plt.pause(1)
+		self.epochs += 1
+
+		# calculate statistics
+		if self.live_plot:
+			self.update_live_plot()
+
+		self.time_elapsed = time.time() - since
+
+		if show_training_stats:
+			print(f'Training complete in {self.time_elapsed // 60:.0f}m {self.time_elapsed % 60:.0f}s')
+			if self.valloader is not None:
+				print(f"{self.epochs} epochs done. Best validation loss is {min(self.val_losses):0.3f}")
+
+		return self.train_losses, self.val_losses, self.best_model
+
+
+	def test(self, model=None, testloader=None):
+		if model      is None:
+			model      = self.model
+		if testloader is None:
+			testloader = self.testloader
+
+		samples  = 0
+		avg_loss = 0.0
+		progress = tqdm(enumerate(testloader), desc="Loss:", total=len(testloader), unit='batches', ncols='100%')
+
+		model.eval()
+		for cnt, (inputs, labels) in progress:
+			inputs = inputs.to(self.device)
+			labels = labels.to(self.device)
+
+			with torch.no_grad():
+				outputs = model(inputs)
+				loss    = self.criterion(outputs, labels)
+
+				avg_loss += loss
+
+			samples += len(outputs)
+	        # updating progress bar
+			progress.set_description(f"Loss: {avg_loss/(cnt+1):.4f}")
+
+		# calculate statistics
+		avg_loss /= len(testloader)
+
+		return avg_loss.item()
