@@ -49,8 +49,8 @@ class Pipeline():
 	def __init__(self, model, device, optimizer, criterion,
 	                   trainloader, testloader, valloader=None, hide_sub_bars=True, hide_all_bars=False,
 	                   train_losses=None, val_losses=None, train_accuracies=None, val_accuracies=None,
-	                   best_model=None, best_model_val_acc=None, best_model_val_loss=None, live_plot=False,
-					   time_elapsed=0.0, init_epochs=0, use_accuracy=True):
+	                   best_loss_model=None, best_acc_model=None, best_model_val_loss=None, best_model_val_acc=None,
+					   live_plot=False, time_elapsed=0.0, init_epochs=0, use_accuracy=True):
 		self.model         = model
 		self.device        = device
 		self.optimizer     = optimizer
@@ -138,7 +138,7 @@ class Pipeline():
 			if not isinstance(best_model_val_loss, int):
 				best_model_val_loss = best_model_val_loss[0]
 
-		self.best_loss_model = best_model
+		self.best_loss_model = best_loss_model
 		self.best_val_loss   = min(self.best_val_loss, best_model_val_loss)
 
 	def moving_average(self, a, n=3):
@@ -395,11 +395,13 @@ class ClassificationPipeline(Pipeline):
 	def __init__(self, model, device, optimizer, criterion,
 	                   trainloader, testloader, valloader=None, hide_sub_bars=True, hide_all_bars=False,
 	                   train_losses=None, val_losses=None, train_accuracies=None, val_accuracies=None,
-	                   best_model=None, best_model_val_acc=None, live_plot=False, time_elapsed=0.0, init_epochs=0):
+	                   best_loss_model=None, best_acc_model=None, best_model_val_loss=None, best_model_val_acc=None,
+					   live_plot=False, time_elapsed=0.0, init_epochs=0):
 	   super().__init__(model, device, optimizer, criterion,
 	                   trainloader, testloader, valloader, hide_sub_bars, hide_all_bars,
 	                   train_losses, val_losses, train_accuracies, val_accuracies,
-	                   best_model, best_model_val_acc, None, live_plot, time_elapsed, init_epochs, True)
+	                   best_loss_model, best_acc_model, best_model_val_loss, best_model_val_acc,
+					   live_plot, time_elapsed, init_epochs, True)
 
 class RegressionPipeline():
 	def __init__(self, model, device, optimizer, criterion,
@@ -409,4 +411,4 @@ class RegressionPipeline():
 	   super().__init__(model, device, optimizer, criterion,
 	                   trainloader, testloader, valloader, hide_sub_bars, hide_all_bars,
 	                   train_losses, val_losses, None, None,
-	                   best_model, None, best_model_val_loss, live_plot, time_elapsed, init_epochs, False)
+	                   best_model, None, best_model_val_loss, None, live_plot, time_elapsed, init_epochs, False)
