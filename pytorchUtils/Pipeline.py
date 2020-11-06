@@ -212,7 +212,7 @@ class Pipeline():
 				train_accuracy += (predicted == labels).sum().item()
 
 				# updating progress bar
-				pbar_desc = f"TRAINING | Loss: {train_loss/(cnt+1):.4f} - Accuracy: {100*train_accuracy/samples:.2f}")
+				pbar_desc = f"TRAINING | Loss: {train_loss/(cnt+1):.4f} - Accuracy: {100*train_accuracy/samples:.2f}"
 			else:
 				# updating progress bar
 				pbar_desc = f"TRAINING | Loss: {train_loss/(cnt+1):.4f}"
@@ -253,11 +253,11 @@ class Pipeline():
 
 				# updating progress bar
 				pbar_desc = f"VALIDATION | Loss: {val_loss/(cnt+1):.4f}" + \
-				            (f" - Accuracy: {100*val_accuracy/samples:.2f}" if self.use_accuracy)
+				            (f" - Accuracy: {100*val_accuracy/samples:.2f}" if self.use_accuracy else "")
 				progress.set_description(pbar_desc)
 
 			# calculate statistics
-			val_loss     /= len(self.valloader)
+			val_loss /= len(self.valloader)
 			if self.use_accuracy:
 				val_accuracy *= 100/samples
 
@@ -316,10 +316,10 @@ class Pipeline():
 	    # updating progress bar
 		if self.valloader is not None:
 			pbar_desc = f"Validation | Loss: {val_loss:.4f}" + \
-			            (f" - Accuracy: {val_accuracy:.2f}" if self.use_accuracy)
+			            (f" - Accuracy: {val_accuracy:.2f}" if self.use_accuracy else "")
 		else:
 			pbar_desc = f"Training | Loss: {train_loss:.4f}" + \
-			            (f" - Accuracy: {train_accuracy:.2f}" if self.use_accuracy)
+			            (f" - Accuracy: {train_accuracy:.2f}" if self.use_accuracy else "")
 
 		progress.set_description(pbar_desc)
 
@@ -335,7 +335,7 @@ class Pipeline():
 		if show_training_stats:
 			print(f'Training complete in {self.time_elapsed // 60:.0f}m {self.time_elapsed % 60:.0f}s')
 			if self.valloader is not None:
-				print(f"{self.epochs} epochs done. Best validation loss is {min(self.val_losses):0.4f}."
+				print(f"{self.epochs} epochs done. Best validation loss is {min(self.val_losses):0.4f}." + \
 				      (f" Best validation accuracy is {max(self.val_accuracies):0.2f}." if self.use_accuracy else ""))
 
 		if self.use_accuracy:
@@ -381,7 +381,7 @@ class Pipeline():
 
 			# updating progress bar
 			progress.set_description(f"Loss: {avg_loss/(cnt+1):.4f}" + 
-				                     (f" - Accuracy: {100*accuracy/samples:.2f}" if self.use_accuracy))
+				                     (f" - Accuracy: {100*accuracy/samples:.2f}" if self.use_accuracy else ""))
 
 		# calculate statistics
 		avg_loss /= len(testloader)
