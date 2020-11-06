@@ -360,7 +360,7 @@ class Pipeline():
 			accuracy  = 0.0
 			pbar_desc = "Loss: - Accuracy:"
 
-		progress = tqdm(enumerate(testloader), desc=pbar_desc, disable=self.hide_top_bars
+		progress = tqdm(enumerate(testloader), desc=pbar_desc, disable=self.hide_top_bars,
 		                total=len(testloader), unit='batches', ncols='100%')
 
 		model.eval()
