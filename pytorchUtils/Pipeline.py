@@ -66,8 +66,8 @@ class Pipeline():
 
 		self.set_live_plot(live_plot)
 
-		self.update_losses_history(    train_losses    , val_losses         )
-		self.update_best_loss_model(   best_loss_model , best_model_val_loss)
+		self.update_losses_history(    train_losses   , val_losses         )
+		self.update_best_loss_model(   best_loss_model, best_model_val_loss)
 
 		if use_accuracy:
 			self.update_accuracies_history(train_accuracies, val_accuracies     )
@@ -124,7 +124,7 @@ class Pipeline():
 			best_acc_model = copy.deepcopy(self.model) #.state_dict())
 		if best_model_val_acc is None:
 			best_model_val_acc = self.test(best_acc_model)
-			if not isinstance(best_model_val_acc, int):
+			if not isinstance(best_model_val_acc, float):
 				best_model_val_acc = best_model_val_acc[1]
 
 		self.best_acc_model = best_acc_model
@@ -135,7 +135,8 @@ class Pipeline():
 			best_loss_model = copy.deepcopy(self.model) #.state_dict())
 		if best_model_val_loss is None:
 			best_model_val_loss = self.test(best_loss_model)
-			if not isinstance(best_model_val_loss, int):
+			print(type(best_model_val_loss))
+			if not isinstance(best_model_val_loss, float):
 				best_model_val_loss = best_model_val_loss[0]
 
 		self.best_loss_model = best_loss_model
