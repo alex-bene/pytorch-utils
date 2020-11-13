@@ -135,7 +135,6 @@ class Pipeline():
 			best_loss_model = copy.deepcopy(self.model) #.state_dict())
 		if best_model_val_loss is None:
 			best_model_val_loss = self.test(best_loss_model)
-			print(type(best_model_val_loss))
 			if not isinstance(best_model_val_loss, float):
 				best_model_val_loss = best_model_val_loss[0]
 
