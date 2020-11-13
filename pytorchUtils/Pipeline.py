@@ -403,7 +403,7 @@ class ClassificationPipeline(Pipeline):
 	                   best_loss_model, best_acc_model, best_model_val_loss, best_model_val_acc,
 					   live_plot, time_elapsed, init_epochs, True)
 
-class RegressionPipeline():
+class RegressionPipeline(Pipeline):
 	def __init__(self, model, device, optimizer, criterion,
 	                   trainloader, testloader, valloader=None, hide_sub_bars=True, hide_all_bars=False,
 	                   train_losses=None, val_losses=None, best_model=None, best_model_val_loss=None,
