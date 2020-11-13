@@ -225,9 +225,9 @@ class Pipeline():
 
 		# ----------------- VALIDATION ----------------- #
 		if self.valloader is not None:
-			samples      = 0
-			val_loss     = 0.0
-			pbar_desc  = "VALIDATION | Loss:"
+			samples   = 0
+			val_loss  = 0.0
+			pbar_desc = "VALIDATION | Loss:"
 			if self.use_accuracy:
 				val_accuracy = 0.0
 				pbar_desc    = "VALIDATION | Loss: - Accuracy:"
