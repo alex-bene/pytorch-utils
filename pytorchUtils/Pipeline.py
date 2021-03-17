@@ -36,7 +36,7 @@ import torch
 import numpy as np
 from .LiveFigure import LiveFigure
 from matplotlib import pyplot as plt
-from tqdm.autonotebook import trange, tqdm
+from tqdm.autonotebook import tqdm
 
 # progress bar (works in Jupyter notebook too!)
 # try:
@@ -187,7 +187,7 @@ class Pipeline():
 			pbar_desc      = "TRAINING | Loss: - Accuracy:"
 
 		progress = tqdm(enumerate(self.trainloader), desc=pbar_desc, total=len(self.trainloader),
-		                unit='batches', ncols='100%', disable=self.hide_sub_bars)
+		                unit='batches', disable=self.hide_sub_bars)
 
 		self.model.train()
 		for cnt, (inputs, labels) in progress:
@@ -233,7 +233,7 @@ class Pipeline():
 				pbar_desc    = "VALIDATION | Loss: - Accuracy:"
 
 			progress = tqdm(enumerate(self.valloader), desc=pbar_desc, total=len(self.valloader),
-							unit='batches', ncols='100%', disable=self.hide_sub_bars)
+							unit='batches', disable=self.hide_sub_bars)
 
 			self.model.eval()
 			for cnt, (inputs, labels) in progress:
@@ -279,7 +279,7 @@ class Pipeline():
 			pbar_desc += " - Accuracy:"
 
 		progress = tqdm(range(init_epochs, init_epochs + epochs), desc=pbar_desc,
-		                unit='epochs', ncols='100%', disable=self.hide_top_bars)
+		                unit='epochs', dynamic_ncols=True, disable=self.hide_top_bars)
 
 		for self.epochs in progress: # loop over the dataset multiple times
 			one_epoch = self.train_one_epoch()
@@ -361,7 +361,7 @@ class Pipeline():
 			pbar_desc = "Loss: - Accuracy:"
 
 		progress = tqdm(enumerate(testloader), desc=pbar_desc, disable=self.hide_top_bars,
-		                total=len(testloader), unit='batches', ncols='100%')
+		                total=len(testloader), dynamic_ncols=True, unit='batches')
 
 		model.eval()
 		for cnt, (inputs, labels) in progress:
