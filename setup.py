@@ -10,8 +10,8 @@ setup(
   author = 'Alexandros Benetatos',
   author_email = 'alexandrosbene@gmail.com',
   url = 'https://github.com/alex-bene/pytorch-utils',
-  download_url = 'https://github.com/alex-bene/pytorch-utils/archive/v0.0.2-beta.tar.gz',
-  keywords = ['pytorch', 'utilities '],
+  download_url = 'https://github.com/alex-bene/pytorch-utils/releases/download/v0.0.3-beta/pytorchUtils-0.0.3.tar.gz',
+  keywords = ['pytorch', 'utilities'],
   install_requires=[
           'tqdm',
           'numpy',
