@@ -123,7 +123,7 @@ class Pipeline():
 		if best_acc_model is None:
 			best_acc_model = copy.deepcopy(self.model) #.state_dict())
 		if best_model_val_acc is None:
-			best_model_val_acc = self.test(best_acc_model)
+			best_model_val_acc = self.test(best_acc_model, self.valloader)
 			if not isinstance(best_model_val_acc, float):
 				best_model_val_acc = best_model_val_acc[1]
 
@@ -134,7 +134,7 @@ class Pipeline():
 		if best_loss_model is None:
 			best_loss_model = copy.deepcopy(self.model) #.state_dict())
 		if best_model_val_loss is None:
-			best_model_val_loss = self.test(best_loss_model)
+			best_model_val_loss = self.test(best_loss_model, self.valloader)
 			if not isinstance(best_model_val_loss, float):
 				best_model_val_loss = best_model_val_loss[0]
 
