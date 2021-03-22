@@ -66,12 +66,12 @@ class Pipeline():
 
 		self.set_live_plot(live_plot)
 
-		self.update_losses_history(    train_losses   , val_losses         )
-		self.update_best_loss_model(   best_loss_model, best_model_val_loss)
-
 		if use_accuracy:
-			self.update_accuracies_history(train_accuracies, val_accuracies     )
-			self.update_best_acc_model(    best_acc_model  , best_model_val_acc )
+			self.update_accuracies_history(train_accuracies, val_accuracies    )
+			self.update_best_acc_model(    best_acc_model  , best_model_val_acc)
+		else:
+			self.update_losses_history(    train_losses   , val_losses         )
+			self.update_best_loss_model(   best_loss_model, best_model_val_loss)
 
 	def set_model(self, model):
 		self.model = model
@@ -112,7 +112,7 @@ class Pipeline():
 			train_accuracies = []
 		if val_accuracies is None:
 			val_accuracies   = []
-			self.best_val_acc = 0.0
+			self.best_val_acc = -1.0
 		else:
 			self.best_val_acc = max(val_accuracies)
 
@@ -120,26 +120,65 @@ class Pipeline():
 		self.val_accuracies   = val_accuracies
 
 	def update_best_acc_model(self, best_acc_model=None, best_model_val_acc=None):
-		if best_acc_model is None:
-			best_acc_model = copy.deepcopy(self.model) #.state_dict())
-		if best_model_val_acc is None:
-			best_model_val_acc = self.test(best_acc_model, self.valloader)
-			if not isinstance(best_model_val_acc, float):
-				best_model_val_acc = best_model_val_acc[1]
+		if self.best_val_acc < 0:
+			best_acc_model = copy.deepcopy(self.model)
 
-		self.best_acc_model = best_acc_model
-		self.best_val_acc   = max(self.best_val_acc, best_model_val_acc)
+		if best_model_val_acc is None and best_acc_model is not None:
+			best_model_val = self.test(best_acc_model, self.valloader)
+			if not isinstance(best_model_val, float):
+				best_model_val_acc = best_model_val[1]
+				if self.best_val_loss is np.inf:
+					self.best_val_loss = best_model_val[0]
+		elif best_model_val_acc is None:
+			best_model_val_acc = max(self.val_accuracies)
+
+		self.best_val_acc = best_model_val_acc
+
+		if best_acc_model is None:
+			self.best_acc_model = copy.deepcopy(self.model) #.state_dict())
+		else:
+			self.best_acc_model = best_acc_model
+
+		if self.best_loss_model is None:
+			self.best_loss_model = copy.deepcopy(self.model) #.state_dict())
+
+		# if best_acc_model is None:
+		# 	best_acc_model = copy.deepcopy(self.model) #.state_dict())
+		# if best_model_val_acc is None:
+		# 	best_model_val_acc = self.test(best_acc_model, self.valloader)
+		# 	if not isinstance(best_model_val_acc, float):
+		# 		best_model_val_acc = best_model_val_acc[1]
+
+		# self.best_acc_model = best_acc_model
+		# self.best_val_acc   = max(self.best_val_acc, best_model_val_acc)
 
 	def update_best_loss_model(self, best_loss_model=None, best_model_val_loss=None):
-		if best_loss_model is None:
-			best_loss_model = copy.deepcopy(self.model) #.state_dict())
-		if best_model_val_loss is None:
-			best_model_val_loss = self.test(best_loss_model, self.valloader)
-			if not isinstance(best_model_val_loss, float):
-				best_model_val_loss = best_model_val_loss[0]
+		if self.best_val_loss is np.inf:
+			best_loss_model = copy.deepcopy(self.model)
 
-		self.best_loss_model = best_loss_model
-		self.best_val_loss   = min(self.best_val_loss, best_model_val_loss)
+		if best_model_val_loss is None and best_loss_model is not None:
+			best_model_val = self.test(best_loss_model, self.valloader)
+			if not isinstance(best_model_val, float):
+				best_model_val_loss = best_model_val[1]
+		elif best_model_val_loss is None:
+			best_model_val_loss = min(self.val_losses)
+
+		self.best_val_loss = best_model_val_loss
+
+		if best_loss_model is None:
+			self.best_loss_model = copy.deepcopy(self.model) #.state_dict())
+		else:
+			self.best_loss_model = best_loss_model
+
+		# if best_loss_model is None:
+		# 	best_loss_model = copy.deepcopy(self.model) #.state_dict())
+		# if best_model_val_loss is None:
+		# 	best_model_val_loss = self.test(best_loss_model, self.valloader)
+		# 	if not isinstance(best_model_val_loss, float):
+		# 		best_model_val_loss = best_model_val_loss[0]
+
+		# self.best_loss_model = best_loss_model
+		# self.best_val_loss   = min(self.best_val_loss, best_model_val_loss)
 
 	def moving_average(self, a, n=3):
 		n  += 1 - n%2 # odd numbers to be able to center each data value in the window
