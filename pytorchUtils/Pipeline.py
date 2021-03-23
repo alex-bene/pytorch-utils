@@ -66,11 +66,17 @@ class Pipeline():
 
 		self.set_live_plot(live_plot)
 
+		self.best_val_loss   = best_model_val_loss
+		self.best_loss_model = best_loss_model
+
+		self.update_losses_history(    train_losses   , val_losses         )
+
 		if use_accuracy:
+			self.best_val_acc    = best_model_val_acc
+			self.best_acc_model  = best_acc_model
 			self.update_accuracies_history(train_accuracies, val_accuracies    )
 			self.update_best_acc_model(    best_acc_model  , best_model_val_acc)
 		else:
-			self.update_losses_history(    train_losses   , val_losses         )
 			self.update_best_loss_model(   best_loss_model, best_model_val_loss)
 
 	def set_model(self, model):
